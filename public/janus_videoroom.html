@@ -1,0 +1,664 @@
+<style>
+  .app {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 10px;
+  height: 100%;
+  width: 100%;
+  
+  background: linear-gradient(135deg, #151515 0%, #3a3a3a 50%, #1c1c1c 100%);
+  color: #eaf0ff;
+  box-sizing: border-box; 
+}
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 8px;
+  padding: 8px;
+  overflow: auto; /* prevent content overflow */
+  box-sizing: border-box;
+}
+.pane {
+  position: relative;
+  background: linear-gradient(135deg, #151515 0%, #3a3a3a 50%, #1c1c1c 100%);
+  border: 1px solid rgba(58,74,123,.35);
+  border-radius: 12px;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+}
+  .topbar {
+  display: flex; 
+}
+
+.left-buttons {
+  margin-right: auto; 
+}
+
+.center-buttons {
+  display: flex;
+gap: 6px;
+}
+  .topbar input{border:1px solid rgba(42,58,95,.6);color:#e9eef7;border-radius:10px;padding:8px 10px}
+  .btn{padding:10px 12px;border-radius:10px;border:1px solid #4a90e2;background: linear-gradient(135deg, #151515 0%, #3a3a3a 50%, #1c1c1c 100%);color:#cfe0ff;cursor:pointer}
+  .grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:8px;padding:8px}
+  .pane{position:relative;border:1px solid rgba(58,74,123,.35);border-radius:12px;overflow:hidden}
+  video{width:100%;height:100%;object-fit:contain;background:#000}
+  .chrome{position:absolute;left:8px;right:8px;top:8px;display:flex;gap:8px;background: linear-gradient(135deg, #151515 0%, #3a3a3a 50%, #1c1c1c 100%);align-items:center;z-index:3;
+          backdrop-filter:blur(4px);padding:6px;border-radius:10px;border:1px solid rgba(58,74,123,.35)}
+  
+  select{flex:0 0 auto;min-width:120px;background: linear-gradient(135deg, #151515 0%, #3a3a3a 50%, #1c1c1c 100%);border:1px solid #4a90e2;color:#e9eef7;border-radius:10px;padding:8px}
+  .feedSel{flex:1}
+  .badge{position:absolute;left:8px;bottom:8px;padding:4px 8px;border-radius:999px;background: linear-gradient(135deg, #151515 0%, #3a3a3a 50%, #1c1c1c 100%);
+         border:1px solid #4a90e2;color:#cfe0ff;font-size:12px;z-index:2}
+  .stats{position:absolute;right:8px;bottom:8px;display:flex;flex-direction:column;gap:4px;z-index:2}
+  .chip{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;padding:4px 8px;border-radius:8px;background: linear-gradient(135deg, #151515 0%, #3a3a3a 50%, #1c1c1c 100%);
+        border:1px solid #4a90e2;color:#d7e6ff}
+  .hidden{display:none}
+  select option {background: #1b1f29;color: #e9eef7;        
+}
+</style>
+<div class="app">
+  <div class="topbar">
+	<div class="left-buttons">
+		<span id="wsStatus" class="muted" style="display: none;">WS: disconnected</span>
+		<label style="display: none;">URL:</label>
+		<input style="display: none;" id="wsUrl" size="34" value="wss://192.168.1.89:8989/janus" />
+		<!--  input style="display: none;" id="wsUrl" size="34" value="ws://10.28.177.20:8188" /> ZeroTier -->
+		<label style="display: none;">Room:</label>
+		<input style="display: none;" id="roomId" size="6" value="2234" />
+		<label style="display: none;" >ICE JSON:</label>
+		<input style="display: none;" id="iceJson" size="40" value='{"iceServers":[{"urls":["stun:stun.l.google.com:19302"]}]}' />
+		<button style="display: none;" id="btnConnect" class="btn">Connect</button>
+		<button id="btnRefresh" class="btn ">Refresh Feeds</button>
+		<button id="btnAddFeed" class="btn ">Add Feed</button>
+	</div>
+	<div class="center-buttons">
+    <button id="btnZoomIn" class="btn">Zoom In</button>
+    <button id="btnZoomOut" class="btn">Zoom Out</button>
+    <button id="btnHome" class="btn">Home</button>
+    <button id="btnLeft" class="btn">Left</button>
+    <button id="btnRight" class="btn">Right</button>
+    <button id="btnUp" class="btn">Up</button>
+    <button id="btnDown" class="btn">Down</button>
+  </div>
+</div>
+  <div class="grid" id="grid"></div>
+
+  <div class="log" id="log" style="display:none;"></div>
+</div>
+<script>
+window.addEventListener('load', () => {
+	const grid = document.getElementById('grid');
+	let paneCount = 0;
+	const maxPanes = 4;
+	const panes = [];
+	
+	// Function to update grid layout dynamically
+	function updateGridLayout() {
+	  if (paneCount === 1) {
+	    grid.style.gridTemplateColumns = "1fr";
+	    grid.style.gridTemplateRows = "1fr";
+	  } else if (paneCount === 2) {
+	    grid.style.gridTemplateColumns = "1fr 1fr";
+	    grid.style.gridTemplateRows = "1fr";
+	  } else {
+	    grid.style.gridTemplateColumns = "1fr 1fr";
+	    grid.style.gridTemplateRows = "1fr 1fr";
+	  }
+	}
+	
+	function createPane(index) {
+	  const paneHTML = document.createElement('div');
+	  paneHTML.classList.add('pane');
+	  paneHTML.dataset.idx = index;
+	  paneHTML.innerHTML = `
+	    <div class="chrome">
+	      <select class="feedSel"></select>
+	      <select class="modeSel" title="Mode">
+	        <option value="auto" selected>Auto</option>
+	        <option value="manual">Manual</option>
+	        <option value="off">Off</option>
+	      </select>
+	      <select class="streamSel" title="Stream (in Manual mode)">
+	        <option value="high">High</option>
+	        <option value="mid" selected>Mid</option>
+	        <option value="low">Low</option>
+	      </select>
+	      <button class="btn btnFS" hidden>FullScreen</button>
+	      <button class="btn btnRemove">X</button>
+	    </div>
+	    <div class="badge">Pane ${index + 1}</div>
+	    <div class="stats">
+	      <div class="chip chip-res">—</div>
+	      <div class="chip chip-fps">—</div>
+	      <div class="chip chip-br">—</div>
+	      <div class="chip chip-loss">loss —</div>
+	      <div class="chip chip-jit">jit —</div>
+	      <div class="chip chip-rtt">rtt —</div>
+	    </div>
+	    <video playsinline autoplay muted></video>
+	  `;
+	  grid.appendChild(paneHTML);
+	  panes.push({
+	    el: paneHTML,
+	    idx: index,
+	    video: paneHTML.querySelector('video'),
+	    select: paneHTML.querySelector('.feedSel'),
+	    modeSel: paneHTML.querySelector('.modeSel'),
+	    streamSel: paneHTML.querySelector('.streamSel'),
+	    btnFS: paneHTML.querySelector('.btnFS'),
+	    btnMin: paneHTML.querySelector('.btnMin'),
+	    chipRes: paneHTML.querySelector('.chip-res'),
+	    chipFps: paneHTML.querySelector('.chip-fps'),
+	    chipBr: paneHTML.querySelector('.chip-br'),
+	    chipLoss: paneHTML.querySelector('.chip-loss'),
+	    chipJit: paneHTML.querySelector('.chip-jit'),
+	    chipRtt: paneHTML.querySelector('.chip-rtt'),
+	    btnRemove: paneHTML.querySelector('.btnRemove'),
+	    hid: null, pc: null, feedId: null, queue: [],
+	    statsTimer: null,
+	    lastBytes: null, lastTs: null, lastFramesDecoded: null,
+	    lastRxPkts: null, lastLost: null,
+	    _videoMids: null, _midMap: null, _adaptTimer: null, _layer: 1, _lastSwitchAt: 0,
+	    trackByMid: {}, activeMid: null,
+	    desiredMode: 'auto',
+	    desiredTier: 'mid'
+	  });
+	
+	  const p = panes[index];
+	
+	// disable stream selector if not in manual mode
+	p.streamSel.disabled = (p.modeSel.value !== 'manual');
+	
+	// --- FEED SELECT EVENT ---
+	p.select.addEventListener("change", () =>
+	  setPaneFeed(p, p.select.value || null).catch(e => log(`setPane err p${p.idx+1}: ${e}`))
+	);
+	
+	// --- MODE SELECT EVENT ---
+	p.modeSel.addEventListener("change", async () => {
+	  p.desiredMode = p.modeSel.value;
+	  p.streamSel.disabled = (p.desiredMode !== 'manual');
+	  if (!p.hid) return;
+	
+	  if (p.desiredMode === 'auto') {
+	    await setOnlyMid(p, p._midMap?.mid || p._videoMids?.[0]);
+	    p._layer = 1;
+	    startAdaptation(p);
+	  } else if (p.desiredMode === 'off') {
+	    stopAdaptation(p);
+	    if (p._videoMids) {
+	      const streams = p._videoMids.map(m => ({ mid: String(m), send: false }));
+	      await wsSend({ janus:"message", session_id:sid, handle_id:p.hid, body:{ request:"update", streams } });
+	    }
+	  } else { // manual
+	    stopAdaptation(p);
+	    const tier = p.streamSel?.value || p.desiredTier || 'mid';
+	    p.desiredTier = tier;
+	    const mid = p._midMap?.[tier] || p._videoMids?.[0];
+	    if (mid != null) {
+	      await setOnlyMid(p, mid);
+	      try { selectLocalMid(p, mid); } catch(_) {}
+	      p._layer = (tier === 'low' ? 0 : tier === 'high' ? 2 : 1);
+	    }
+	  }
+	});
+	
+	// --- STREAM SELECT EVENT (manual mode only) ---
+	p.streamSel.addEventListener("change", async () => {
+	  if (p.desiredMode !== 'manual') return;
+	  const tier = p.streamSel.value;
+	  p.desiredTier = tier;
+	  const mid = p._midMap?.[tier] || p._videoMids?.[0];
+	  if (mid != null) {
+	    await setOnlyMid(p, mid);
+	    try { selectLocalMid(p, mid); } catch(_) {}
+	    p._layer = (tier === 'low' ? 0 : tier === 'high' ? 2 : 1);
+	  }
+	});
+	
+	// --- REMOVE PANE BUTTON ---
+	p.btnRemove.addEventListener("click", async () => {
+	
+	  stopAdaptation(p);
+	  if (p.statsTimer) clearInterval(p.statsTimer);
+	
+	
+	  if (p.hid && sid) {
+	    try {
+	      await wsSend({
+	        janus: "detach",
+	        session_id: sid,
+	        handle_id: p.hid
+	      });
+	    } catch (e) {
+	      log(`Error detaching handle for pane ${p.idx + 1}: ${e}`);
+	    }
+	  }
+	
+	  
+	  p.el.remove();
+	  panes.splice(panes.indexOf(p), 1);
+	
+	
+	  paneCount = panes.length;
+	  updateGridLayout();
+	});
+	
+	
+	
+	  paneCount++;
+	  updateGridLayout();
+	  refreshPublishers();
+	}
+	
+	// Initialize with one pane
+	createPane(0);
+	
+	// Add Feed button logic
+	document.getElementById('btnAddFeed').addEventListener('click', () => {
+	  if (paneCount >= maxPanes) {
+	    alert("Maximum of 4 feeds reached.");
+	    return;
+	  }
+	  createPane(paneCount);
+	});
+	
+	
+	/* helpers & log */
+	const $ = id => document.getElementById(id);
+	function setWsStatus(txt){ $('wsStatus').textContent = 'WS: ' + txt; }
+	
+	
+	/* state */
+	let ws=null, sid=null, txn=0, waiters=new Map(), kaTimer=null, lastFocusedPane=null;
+	let publishers = []; // [{id,display,publisher:true}]
+	function nextTxn(){ return `t${++txn}`; }
+	
+	function wsSend(obj){
+	  if(!ws || ws.readyState!==WebSocket.OPEN) return Promise.reject(new Error("WS not open"));
+	  const t = obj.transaction || nextTxn();
+	  obj.transaction = t;
+	  return new Promise((res,rej)=>{
+	    waiters.set(t,{res,rej,ts:Date.now()});
+	    try{ ws.send(JSON.stringify(obj)); }catch(e){ rej(e); return; }
+	    setTimeout(() => {
+	      if(waiters.has(t)){ waiters.get(t).rej(new Error("Janus txn timeout")); waiters.delete(t); }
+	    }, 8000);
+	  });
+	}
+	function startKeepalive(){
+	  if(kaTimer) clearInterval(kaTimer);
+	  kaTimer = setInterval(()=>{
+	    if(ws && ws.readyState===WebSocket.OPEN && sid){
+	      wsSend({janus:"keepalive", session_id:sid}).catch(()=>{});
+	    }
+	  }, 25000);
+	}
+	function stopKeepalive(){ if(kaTimer) clearInterval(kaTimer); kaTimer=null; }
+	
+	
+	/* stats */
+	function startStats(p){
+	  if(p.statsTimer) clearInterval(p.statsTimer);
+	  p.statsTimer = setInterval(async()=>{
+	    if(!p.pc) return;
+	    try{
+	      const stats = await p.pc.getStats();
+	      let inboundCandidates = [];
+	      stats.forEach(r=>{ if(r.type==='inbound-rtp' && (r.kind==='video' || r.mediaType==='video')) inboundCandidates.push(r); });
+	      let inbound = null;
+	      // Prefer MID match
+	      if (p.activeMid){
+	        inbound = inboundCandidates.find(r => String(r.mid||r.mId||'') === String(p.activeMid)) || null;
+	      }
+	      // Fallback: match by displayed track id via 'track' stats
+	      if (!inbound){
+	        let desiredTrackId = null;
+	        try{
+	          const vt = p.video.srcObject && p.video.srcObject.getVideoTracks && p.video.srcObject.getVideoTracks()[0];
+	          if (vt) desiredTrackId = vt.id;
+	        }catch(_){}
+	        if (desiredTrackId){
+	          for (const r of inboundCandidates){
+	            const tr = r.trackId ? stats.get(r.trackId) : null;
+	            if (tr && (tr.trackIdentifier===desiredTrackId || tr.receiverId===desiredTrackId)){ inbound = r; break; }
+	          }
+	        }
+	      }
+	      if (!inbound && inboundCandidates.length) inbound = inboundCandidates[0];
+	      if (!inbound) return;
+	      const nowTs = inbound.timestamp;
+	      if(p.lastBytes!=null && p.lastTs!=null){
+	        const bits = (inbound.bytesReceived - p.lastBytes) * 8;
+	        const ms = (nowTs - p.lastTs);
+	        if(ms>0){
+	          const kbps = (bits/1000) / (ms/1000);
+	          p.chipBr.textContent = `${kbps.toFixed(0)} kbps`;
+	        }
+	      }
+	      p.lastBytes = inbound.bytesReceived;
+	      p.lastTs = nowTs;
+	      if(typeof inbound.framesPerSecond === 'number'){
+	        p.chipFps.textContent = `${inbound.framesPerSecond.toFixed(0)} fps`;
+	      }
+	      let w = inbound.frameWidth, h=inbound.frameHeight;
+	      const vw = p.video.videoWidth, vh = p.video.videoHeight;
+	      if(vw && vh){ w=vw; h=vh; }
+	      if(w&&h) p.chipRes.textContent = `${w}x${h}`;
+	      const rx = inbound.packetsReceived ?? 0;
+	      const lost = inbound.packetsLost ?? 0;
+	      if(p.lastRxPkts!=null && p.lastLost!=null){
+	        const dRx = rx - p.lastRxPkts;
+	        const dLost = lost - p.lastLost;
+	        const denom = dRx + dLost;
+	        if(denom > 0){
+	          const lossPct = (dLost * 100) / denom;
+	          p.chipLoss.textContent = `loss ${lossPct.toFixed(1)}%`;
+	        }
+	      }
+	      p.lastRxPkts = rx;
+	      p.lastLost = lost;
+	      if(typeof inbound.jitter === 'number'){
+	        p.chipJit.textContent = `jit ${(inbound.jitter*1000).toFixed(1)} ms`
+	      }
+	      let rttMs = null, selectedPairId=null;
+	      stats.forEach(r=>{ if(r.type==='transport' && r.selectedCandidatePairId) selectedPairId = r.selectedCandidatePairId; });
+	      if(selectedPairId){
+	        const pair = stats.get(selectedPairId);
+	        if(pair && typeof pair.currentRoundTripTime==='number') rttMs = pair.currentRoundTripTime * 1000;
+	      }
+	      if(rttMs!=null) p.chipRtt.textContent = `rtt ${rttMs.toFixed(1)} ms`;
+	    }catch(e){ /* swallow to keep loop alive */ }
+	  }, 1000);
+	}
+	
+	/* Janus helpers */
+	async function setOnlyMid(p, midOn){
+	  if(!p || !p.hid || !Array.isArray(p._videoMids) || !p._videoMids.length) return;
+	  const streams = p._videoMids.map(m => ({ mid: String(m), send: String(m) === String(midOn) }));
+	  await wsSend({ janus:"message", session_id:sid, handle_id:p.hid,
+	    body:{ request:"update", streams }
+	  });
+	}
+	
+	
+	function selectLocalMid(p, mid){
+	  try{
+	    if(!mid) return;
+	    const t = p.trackByMid && p.trackByMid[String(mid)];
+	    if(t){
+	      const ms = new MediaStream([t]);
+	      p.video.srcObject = ms;
+	      p.activeMid = String(mid);
+	      // reset bitrate counters for new stream
+	      p.lastBytes = null; p.lastTs = null; p.lastRxPkts = null; p.lastLost = null;
+	    }
+	  }catch(e){ /* ignore */ }
+	}
+	
+	async function mapMidsByResolution(p){
+	  const mids = p._videoMids || [];
+	  p._midMap = {
+	    high: mids[0],
+	    mid:  mids[1] ?? mids[0],
+	    low:  mids[2] ?? mids[1] ?? mids[0]
+	  };
+	}
+	
+	/* adaptation loop (enabled only when p.desiredMode==='auto') */
+	function startAdaptation(p, opts = {}){
+	  const T = { minUpKbps: 900, minMidKbps: 450, maxLoss: 0.05, maxRttMs: 350, cooldownMs: 3000, ...opts };
+	  if (p._adaptTimer) clearInterval(p._adaptTimer);
+	  p._adaptTimer = setInterval(async ()=>{
+	    if (!p.pc || !p.hid) return;
+	    if (p.desiredMode !== 'auto') return; // manual mode: do nothing
+	    const now = Date.now();
+	    if (now - p._lastSwitchAt < T.cooldownMs) return;
+	    if (!p._midMap) return;
+	
+	    const kbps = Number((p.chipBr.textContent.match(/([\d.]+)\s*kbps/i)||[])[1] || 0);
+	    const loss = Number((p.chipLoss.textContent.match(/([\d.]+)%/i)||[])[1] || 0) / 100;
+	    const rtt  = Number((p.chipRtt.textContent.match(/([\d.]+)\s*ms/i)||[])[1] || 9999);
+	    const healthy = (loss <= T.maxLoss) && (rtt <= T.maxRttMs);
+	
+	    let target = p._layer;
+	    if (healthy) {
+	      if (kbps >= T.minUpKbps)       target = 2;
+	      else if (kbps >= T.minMidKbps) target = Math.max(target, 1);
+	      else                            target = Math.min(target, 1);
+	    } else {
+	      target = Math.max(0, p._layer - 1);
+	    }
+	
+	    if (target !== p._layer) {
+	      const tier = (target===0?'low':target===1?'mid':'high');
+	      const mid  = (p._midMap && p._midMap[tier]) ? p._midMap[tier] : p._midMap?.mid;
+	      if (!mid) return;
+	      try{
+	        await setOnlyMid(p, mid);
+	        try{ selectLocalMid(p, mid); }catch(_){ }
+	        p._layer = target;
+	        p._lastSwitchAt = now;
+	      }catch(e){
+	      }
+	    }
+	  }, 2000);
+	}
+	function stopAdaptation(p){ if (p._adaptTimer) { clearInterval(p._adaptTimer); p._adaptTimer=null; } }
+	
+	/* attach/teardown subscriber per pane */
+	async function setPaneFeed(p, feedId){
+	  if((feedId||null) === (p.feedId||null)) return;
+	  if(p.statsTimer){ clearInterval(p.statsTimer); p.statsTimer=null; }
+	  if(p.pc){ try{ p.pc.getSenders().forEach(s=>s.track&&s.track.stop()); p.pc.close(); }catch(_){} p.pc=null; }
+	  if(p.hid){ try{ await wsSend({janus:'detach', session_id:sid, handle_id:p.hid}); }catch(_){} p.hid=null; }
+	  p.feedId=null; p.queue=[]; p.video.srcObject=null;
+	  p.lastBytes=p.lastTs=p.lastFramesDecoded=p.lastRxPkts=p.lastLost=null;
+	  p.chipRes.textContent='—'; p.chipFps.textContent='—'; p.chipBr.textContent='—';
+	  p.chipLoss.textContent='loss —'; p.chipJit.textContent='jit —'; p.chipRtt.textContent='rtt —';
+	  stopAdaptation(p);
+	
+	  if(!feedId) return;
+	  const r1 = await wsSend({janus:'attach', session_id:sid, plugin:'janus.plugin.videoroom'});
+	  p.hid = r1.data.id;
+	  const room = Number($("roomId").value);
+	  await wsSend({janus:'message', session_id:sid, handle_id:p.hid,
+	    body:{request:'join', ptype:'subscriber', room, feed:Number(feedId), notify_events:true}
+	  });
+	  p.feedId = Number(feedId);
+	}
+	
+	async function handleOffer(p, jsep){
+	  const ice = JSON.parse($("iceJson").value||'{}')||{};
+	  const pc = new RTCPeerConnection(ice); p.pc = pc;
+	  pc.ontrack = ev => {
+	    try{
+	      const mid = (ev.transceiver && ev.transceiver.mid) ? String(ev.transceiver.mid) : null;
+	      if(mid){ p.trackByMid[mid] = ev.track; }
+	      if(!p.video.srcObject){ // set first arrival
+	        if(mid && p.trackByMid[mid]){
+	          p.video.srcObject = new MediaStream([p.trackByMid[mid]]);
+	        }else{
+	          p.video.srcObject = ev.streams[0];
+	        }
+	      }
+	    }catch(e){ /* ignore */ }
+	  };
+	  pc.onicecandidate = ev => {
+	    if(!p.hid) return;
+	    if (ev.candidate){
+	      wsSend({janus:'trickle', session_id:sid, handle_id:p.hid, candidate: ev.candidate.toJSON()}).catch(()=>{});
+	    } else {
+	      wsSend({janus:'trickle', session_id:sid, handle_id:p.hid, candidate:{completed:true}}).catch(()=>{});
+	    }
+	  };
+	  try {
+	    const mids = []; let inVideo = false;
+	    jsep.sdp.split('\n').forEach(line=>{
+	      if(line.startsWith('m=')) inVideo = line.startsWith('m=video');
+	      if(inVideo && line.startsWith('a=mid:')) mids.push(line.slice(6).trim());
+	    });
+	    p._videoMids = mids;
+	  } catch(_){}
+	  await pc.setRemoteDescription(new RTCSessionDescription(jsep));
+	  const answer = await pc.createAnswer(); await pc.setLocalDescription(answer);
+	  const room = Number($("roomId").value);
+	  await wsSend({janus:'message', session_id:sid, handle_id:p.hid, body:{request:'start', room},
+	                jsep:{type:'answer', sdp:answer.sdp}});
+	  while(p.queue.length){
+	    const c=p.queue.shift();
+	    if(c.completed) await pc.addIceCandidate(null);
+	    else try{ await p.pc.addIceCandidate(new RTCIceCandidate(c)); }catch(_){}
+	  }
+	  startStats(p);
+	  await mapMidsByResolution(p);
+	  // choose local mid track for display
+	  try{ selectLocalMid(p, p._midMap && p._midMap.mid); }catch(_){}
+	
+	  // Apply current mode on start
+	  if (p.desiredMode === 'auto') {
+	    await setOnlyMid(p, p._midMap.mid);
+	    p._layer = 1;
+	    startAdaptation(p);
+	  } else if (p.desiredMode === 'off') {
+	    // Turn off all video mids
+	    const streams = p._videoMids.map(m => ({ mid: String(m), send: false }));
+	    await wsSend({ janus:"message", session_id:sid, handle_id:p.hid, body:{ request:"update", streams } });
+	  } else {
+	    const mid = p._midMap[p.desiredMode] || p._midMap.mid;
+	    await setOnlyMid(p, mid);
+	    p._layer = (p.desiredMode==='low'?0:p.desiredMode==='high'?2:1);
+	  }
+	}
+	
+	/* UI wiring */
+	function refreshPaneSelects(){
+	  for(const p of panes){
+	    const sel = p.select;
+	    const prev = String(p.feedId||"");
+	    sel.innerHTML = "";
+	    const empty = document.createElement("option");
+	    empty.value=""; empty.textContent="select feed"; sel.appendChild(empty);
+	    for(const pub of publishers.filter(x=>x.publisher)){
+	      const opt = document.createElement("option");
+	      opt.value = String(pub.id);
+	      opt.textContent = `${pub.display||pub.id} (${pub.id})`;
+	      sel.appendChild(opt);
+	    }
+	    if(prev && Array.from(sel.options).some(o=>o.value===prev)) sel.value=prev;
+	  }
+	}
+	
+	async function connectWS(){
+	  const url = $("wsUrl").value.trim();
+	  try{
+	    ws = new WebSocket(url, ["janus-protocol"]);
+	  }catch(e){
+	    setWsStatus('failed');
+	    return;
+	  }
+	  ws.onopen = async ()=>{
+	    setWsStatus('open');
+	    try{
+	      const r = await wsSend({janus:"create"});
+	      sid = r.data.id;
+	      startKeepalive();
+	      await refreshPublishers();
+	    }catch(e){
+	    }
+	  };
+	  ws.onclose = (ev)=>{
+	    stopKeepalive();
+	    setWsStatus(`closed (${ev.code})`);
+	    panes.forEach(p=>{
+	  if(p.streamSel) p.streamSel.disabled = (p.modeSel.value !== 'manual');
+	      if(p.statsTimer){ clearInterval(p.statsTimer); p.statsTimer=null; }
+	      if(p.pc){ try{ p.pc.close(); }catch(_){} p.pc=null; }
+	      p.video.srcObject=null;
+	    });
+	  };
+	  ws.onerror = ()=>{ setWsStatus('error'); };
+	  ws.onmessage = async (ev)=>{
+	    let msg; try{ msg = JSON.parse(ev.data); }catch(_){ return; }
+	    if(msg.transaction && waiters.has(msg.transaction)){
+	      const {res} = waiters.get(msg.transaction); waiters.delete(msg.transaction); res(msg); return;
+	    }
+	    const j = msg.janus;
+	    if(j === "event"){
+	      if(msg.jsep && msg.jsep.type === "offer"){
+	        const hid = msg.sender;
+	        const pane = panes.find(x=>x.hid===hid);
+	        if(pane) handleOffer(pane, msg.jsep).catch(err=>log(`Offer err p${pane.idx+1}: ${err}`));
+	      }
+	    }else if(j === "trickle"){
+	      const hid = msg.sender;
+	      const pane = panes.find(x=>x.hid===hid);
+	      if(pane){
+	        const c = msg.candidate;
+	        if(!pane.pc || !pane.pc.remoteDescription){ pane.queue.push(c); }
+	        else{
+	          if(c.completed) await pane.pc.addIceCandidate(null);
+	          else try{ await pane.pc.addIceCandidate(new RTCIceCandidate(c)); }catch(_){}
+	        }
+	      }
+	    }else if(j === "hangup"){
+	      const hid = msg.sender; const pane = panes.find(x=>x.hid===hid);
+	    }
+	  };
+	}
+	
+	async function refreshPublishers(){
+	  try{
+	    const r1 = await wsSend({janus:"attach", session_id:sid, plugin:"janus.plugin.videoroom"});
+	    const hid = r1.data.id;
+	    const room = Number($("roomId").value);
+	    const r2 = await wsSend({janus:"message", session_id:sid, handle_id:hid, body:{request:"listparticipants", room}});
+	    let parts = r2.plugindata?.data?.participants;
+	    await wsSend({janus:"detach", session_id:sid, handle_id:hid}).catch(()=>{});
+	    if(!parts){ log("No inline participants list; try again"); return; }
+	    publishers = parts || [];
+	    refreshPaneSelects();
+	  }catch(e){
+	  }
+	}
+	
+	/* event listeners */
+	$("btnConnect").addEventListener("click", async ()=>{
+	  if(ws && ws.readyState===WebSocket.OPEN){ log("Already connected"); return; }
+	  try{ await connectWS(); }catch(e){ log(`Connect error: ${e.message||e}`); }
+	});
+	$("btnRefresh").addEventListener("click", ()=> refreshPublishers().catch(e=>log(`Refresh error: ${e}`)));
+	
+	
+	
+	/* keyboard shortcuts */
+	function toggleFS(p){
+	  if(document.fullscreenElement === p.el){ document.exitFullscreen(); }
+	  else{ p.el.requestFullscreen().catch(()=>{}); }
+	}
+	function cycleFeed(p, dir){
+	  const sel = p.select; if(!sel.options.length) return;
+	  let i = sel.selectedIndex; if(i<0) i=0; i = (i + dir + sel.options.length) % sel.options.length;
+	  sel.selectedIndex = i; sel.dispatchEvent(new Event('change'));
+	}
+	window.addEventListener('keydown', (e)=>{
+	  if(!ws) return;
+	  if(['INPUT','SELECT','TEXTAREA'].includes(document.activeElement.tagName)) return;
+	  const num = {'1':0,'2':1,'3':2,'4':3}[e.key];
+	  if(num!==undefined){ const p = panes[num]; if(p) toggleFS(p); }
+	  else if(e.key==='0' || e.key==='Escape'){ if(document.fullscreenElement) document.exitFullscreen(); }
+	  else if(e.key==='f'){ const p = lastFocusedPane || panes[0]; if(p) toggleFS(p); }
+	  else if(e.key===']'){ const p = lastFocusedPane || panes[0]; if(p) cycleFeed(p,+1); }
+	  else if(e.key==='['){ const p = lastFocusedPane || panes[0]; if(p) cycleFeed(p,-1); }
+	  else if(e.key==='r'){ refreshPublishers().catch(()=>{}); }
+	});
+
+	$("btnConnect").click();
+});
+</script>
+
+
+

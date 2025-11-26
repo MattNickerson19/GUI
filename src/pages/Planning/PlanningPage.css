@@ -1,0 +1,114 @@
+.planning-page {
+  width: 100%;
+  text-align: center;
+  overflow-y: auto;
+}
+
+.responsive-container {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: left; 
+}
+
+h3.highlight {
+  margin: 2rem 0 2rem;
+  font-size: 1.9rem;
+  text-align: center;
+  font-weight: lighter;
+}
+
+.option {
+  display: block;
+  background: linear-gradient(135deg, #151515 0%, #3a3a3a 50%, #1c1c1c 100%);
+  color: #fff;
+  padding: 12px 16px;
+  margin: 0.5rem 0;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid #4a90e2;
+}
+
+.option input {
+  margin-right: 10px;
+}
+
+.desc {
+  display: block;
+  margin-left: 25px;
+  font-size: 0.9rem;
+  color: #ccc;
+}
+
+.desc-small {
+  display: block;
+  margin-left: 25px;
+  font-size: 0.85rem;
+  margin-top: 5px;
+}
+
+.save-button {
+  display: block;
+  width: 100%;
+  max-width: 400px;
+  padding: 12px 18px;
+  margin: 1rem auto;
+  font-size: 1rem;
+  background-color: #4a90e2;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid #4a4a4a;
+}
+
+.save-button:hover {
+  background-color: #357ab8;
+  border-color: #245a8f;
+}
+
+.save-button:active {
+  transform: scale(1.01);
+}
+
+.option:active {
+  transform: scale(1.01);
+}
+
+.user-guide-link {
+  display: block;
+  margin: 10rem auto 2rem; 
+  color: #fff;
+  text-decoration: none;
+  padding: 8px 12px;
+  background-color: #3a3a3a;
+  border-radius: 6px;
+  width: max-content;
+  border: 1px solid #4a90e2;
+}
+
+.user-guide-link:hover {
+  background-color: #4a4a4a;
+  border-color: #5a5a5a;
+}
+
+/* Responsive font scaling */
+@media (min-width: 1300px) {
+  h3.highlight {
+    font-size: 1.6rem;
+  }
+
+  .option {
+    font-size: 1.2rem;
+    padding: 16px 20px;
+  }
+
+  .desc, .desc-small {
+    font-size: 1rem;
+  }
+
+  .save-button {
+    font-size: 1.2rem;
+    padding: 14px 20px;
+  }
+}
+

@@ -1,0 +1,46 @@
+.bottom-bar {
+  background: #1e1e1e;
+  color: white;
+  padding: 0.5rem 1rem;
+  display: flex;
+  border-top: 3px solid #333;
+  width: 100%;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  z-index: 1000;
+}
+
+.bottom-inner {
+  display: flex;
+  justify-content: space-between; 
+  align-items: center;
+  width: 100%;
+}
+
+.bottom-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.icon-button {
+  background: none;
+  border: none;
+  color: #bbb;
+  font-size: 2rem; 
+  padding: 0.3rem 0.5rem;
+  cursor: pointer;
+}
+
+.icon-button:hover {
+  color: #4a90e2;
+}
+
+.bottom-content {
+  color: #bbb;
+  font-weight: 500;
+  font-size: large;
+  padding-right: 3rem; 
+}
+
+
