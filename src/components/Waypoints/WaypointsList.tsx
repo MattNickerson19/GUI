@@ -1,4 +1,5 @@
 import React from "react";
+import "./WaypointsList.css";
 
 export interface Waypoint {
   id: number | string;
@@ -8,62 +9,38 @@ export interface Waypoint {
 }
 
 interface WaypointListProps {
-  waypoints?: Waypoint[]; 
+  waypoints?: Waypoint[];
 }
 
 const WaypointList: React.FC<WaypointListProps> = ({ waypoints = [] }) => {
-     const tableStyle: React.CSSProperties = {
-        width: "100%",
-        borderCollapse: "separate", 
-        borderSpacing: 0,
-        border: "2px solid #4a90e2", 
-        borderRadius: "10px",
-        overflow: "hidden",
-        background: "linear-gradient(135deg, #151515 0%, #3a3a3a 50%, #1c1c1c 100%)",
-    };
-
-    const cellStyle: React.CSSProperties = {
-        border: "1px solid #4a90e2", 
-        padding: "4px 8px",
-        textAlign: "center",
-        fontWeight: "normal",
-    };
-
   return (
-    <div
-      className="waypointscroll"
-      style={{ flex: "1 1 auto", marginTop: "5px" }}
-    >
+    <div className="waypointscroll">
       {/* Warning message */}
-      <span
-        id="waypointWarningStr"
-        className="waypointwarning highlight"
-        style={{ paddingLeft: "5px", color: "red", display: "none" }}
-      ></span>
+      <span id="waypointWarningStr" className="waypointwarning highlight"></span>
 
       {/* Waypoints table */}
-      <table id="waypointlisttableWaypointTab" className="waypointlist" style={tableStyle}>
+      <table id="waypointlisttableWaypointTab" className="waypointlist">
         <thead>
           <tr>
-            <th style={cellStyle} >ID</th>
-            <th style={cellStyle} >Latitude</th>
-            <th style={cellStyle} >Longitude</th>
-            <th style={cellStyle} >Task</th>
+            <th>ID</th>
+            <th>Latitude</th>
+            <th>Longitude</th>
+            <th>Task</th>
           </tr>
         </thead>
         <tbody id="waypointlistWaypointTab">
           {waypoints.length > 0 ? (
             waypoints.map((wp) => (
               <tr key={wp.id} className="waypointRow">
-                <td style={cellStyle} className="highlight index">{wp.id}</td>
-                <td style={cellStyle} className="highlight">{wp.lat}</td>
-                <td style={cellStyle} className="highlight">{wp.lon}</td>
-                <td style={cellStyle} className="highlight">{wp.task}</td>
+                <td className="highlight index">{wp.id}</td>
+                <td className="highlight">{wp.lat}</td>
+                <td className="highlight">{wp.lon}</td>
+                <td className="highlight">{wp.task}</td>
               </tr>
             ))
           ) : (
             <tr>
-              <td style={cellStyle} colSpan={4}>
+              <td colSpan={4} className="noWaypoints">
                 No Waypoints To Display!
               </td>
             </tr>

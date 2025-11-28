@@ -1,0 +1,36 @@
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10%;
+  font-size: 20px;
+  margin-bottom: 2px;
+  width: 100%;
+}
+
+.coordBox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.home {
+  color: white;
+}
+
+.robot {
+  color: white;
+}
+
+.cord-Label {
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #4aa5e2;
+}
+
+.values {
+  display: flex;
+  gap: 25px;
+}

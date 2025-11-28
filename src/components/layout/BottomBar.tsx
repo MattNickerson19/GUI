@@ -1,6 +1,7 @@
 import "./BottomBar.css";
 import {type RosStatus } from "../../ros/Connection/RosSingleton";
 import { type RobotInfo } from "../../ros/Services/RobotInfoService";
+import Logo from "../../assets/Logos/NANUK_Logo.png";
 import { useRef } from "react";
 
 interface BottomBarProps {
@@ -71,6 +72,9 @@ export default function BottomBar({
           >
             <i className="fas fa-vr-cardboard"></i>
           </button>
+        </div>
+        <div className="nav-logo">
+          <img src={Logo} alt="Logo" />
         </div>
 
         <div className="bottom-content">

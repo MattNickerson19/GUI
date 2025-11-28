@@ -37,42 +37,25 @@
   box-shadow: 0 0 12px rgba(74, 144, 226, 0.6);
 }
 
-.waypoints-buttons button:hover {
-  background: #3a3a3a;
-  border-color: #777;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.35);
-}
-
 .waypoints-buttons button:active {
   transform: scale(1.15);
 }
 
-
-.waypoints-buttons button.btn-blue:hover {
-  background: #266cbb;  
-  border-color: #1f5494;
-}
-
-.waypoints-buttons button.btn-red:hover {
-  background: #a31f1f;
-  border-color: #d83737;
-}
-
 .main-content {
   display: flex;
-  gap: 16px; /* space between left and right panels */
+  gap: 16px; 
 }
 
 .left-panel {
   display: flex;
   flex-direction: column;
-  width: 70%; /* left panel takes 70% of width */
+  width: 70%; 
 }
 
 .right-panel {
   display: flex;
   flex-direction: column;
-  width: 30%; /* right panel takes remaining 30% */
+  width: 30%; 
 }
 
 .top-buttons {
@@ -83,4 +66,20 @@
 
 .top-buttons button {
   width: 50%;
+}
+
+.waypoint-list-container {
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 3px;  
+  box-shadow: 0 0 12px rgba(74, 144, 226, 0.6);
+}
+
+.waypoint-list-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.waypoint-list-container::-webkit-scrollbar-thumb {
+  background: #4a90e2;
+  border-radius: 4px;
 }

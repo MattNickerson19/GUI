@@ -67,7 +67,8 @@ export default function App() {
           <Route path="/" element={<Navigate to="/planning" replace />} />
 
           <Route path="/planning" element={<PlanningPage />} />
-          <Route path="/waypoints" element={<WaypointsPage />} />
+          <Route path="/waypoints" element={<WaypointsPage 
+            robotInfo={robotInfo}/>} />
           <Route path="/movement" element={<MovementPage />} />
           <Route path="/video" element={<VideoPage />} />
           <Route path="/status" element={<StatusPage
