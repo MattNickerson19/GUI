@@ -26,7 +26,7 @@
 .icon-button {
   background: none;
   border: none;
-  color: #bbb;
+  color: white;
   font-size: 2rem; 
   padding: 0.3rem 0.5rem;
   cursor: pointer;
@@ -37,10 +37,41 @@
 }
 
 .bottom-content {
-  color: #bbb;
+  color: white;
   font-weight: 500;
   font-size: large;
   padding-right: 3rem; 
 }
+
+.bottom-bar.status-connected {
+  background: linear-gradient(135deg, #1e1e1e 0%, #2e619b 90%);
+  box-shadow: 0 0 12px rgba(74, 144, 226, 0.6);
+}
+
+.bottom-bar.status-connecting {
+  background: #1e1e1e;
+  animation: pulse-blue 1s infinite ease-in-out;
+  color: #4a90e2;
+}
+
+.bottom-bar.status-connection-failed {
+  background: linear-gradient(135deg, #1e1e1e 0%, #830505 90%);
+  box-shadow: 0 0 12px rgba(131, 5, 5, 0.6);
+}
+.bottom-bar.status-not-connected {
+  background: #1e1e1e;
+}
+
+@keyframes pulse-blue {
+  0%   { box-shadow: 0 0 4px rgba(74,144,226,0.2); }
+  50%  { box-shadow: 0 0 12px rgba(74,144,226,0.6); }
+  100% { box-shadow: 0 0 4px rgba(74,144,226,0.2); }
+}
+
+.placeholder {
+  color: #888; /* lighter gray */
+  font-style: italic;
+}
+
 
 

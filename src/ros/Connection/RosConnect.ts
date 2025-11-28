@@ -1,7 +1,7 @@
 import * as ROSLIB from "roslib";
-import { getRobotInformation, type RobotInfo } from "../RobotInfo/RobotInfoService";
+import { getRobotInformation, type RobotInfo } from "../Services/RobotInfoService";
 
-export type RosStatus = "Connected" | "Connection Failed" | "Not Connected" | "Reconnecting...";
+export type RosStatus = "Connected" | "Connection Failed" | "Not Connected" | "Connecting...";
 
 export class RosConnect {
   ros: ROSLIB.Ros | null = null;
@@ -14,12 +14,14 @@ export class RosConnect {
   private healthCheckIntervalMS: number;
   private currentStatus: RosStatus = "Not Connected";
   private healthCheckInProgress = false;
+  private latestRobotInfo: RobotInfo | null = null;
+  private onRobotInfoUpdate?: (info: RobotInfo) => void;
 
   constructor(
     url = "ws://192.168.1.89:9090",
     reconnectInterval = 10000,
     onStatus?: (status: RosStatus) => void,
-    healthCheckIntervalMS = 5000
+    healthCheckIntervalMS = 7000
   ) {
     this.url = url;
     this.reconnectInterval = reconnectInterval;
@@ -101,35 +103,47 @@ export class RosConnect {
   }
 
   private async healthCheck() {
+    if (!this.ros || !this.ros.isConnected) {
+      const nextStatus =
+          this.currentStatus === "Connecting..." ? "Connection Failed" : "Connecting...";
+        this.setStatus(nextStatus);
+      console.log("[HealthCheck] ROS not connected, reconnecting...");
+      this.disconnect();
+      this.connect();
+      return;
+    }
 
-  if (!this.ros || !this.ros.isConnected) {
-     const nextStatus =
-        this.currentStatus === "Reconnecting..." ? "Connection Failed" : "Reconnecting...";
-      this.setStatus(nextStatus);
-    console.log("[HealthCheck] ROS not connected, reconnecting...");
-    this.disconnect();
-    this.connect();
-    return;
-  }
+    if (this.healthCheckInProgress) return;
+    this.healthCheckInProgress = true;
 
-  if (this.healthCheckInProgress) return;
-  this.healthCheckInProgress = true;
-
-  try {
-    const info: RobotInfo = await getRobotInformation();
-    console.log("[HealthCheck] Connection Healthy,");
-    this.setStatus("Connected");
-  } catch (err) {
-    console.warn("[HealthCheck] Connection Failed.", err);
-    this.disconnect();
-    this.connect();
-    this.setStatus("Reconnecting...");
-  } finally {
-    this.healthCheckInProgress = false;
-  }
+    try {
+      const info: RobotInfo = await getRobotInformation();
+      console.log("[HealthCheck] Connection Healthy,");
+      this.latestRobotInfo = info;
+      this.onRobotInfoUpdate?.(info);
+      this.setStatus("Connected");
+    } catch (err) {
+      console.warn("[HealthCheck] Connection Failed.", err);
+      this.disconnect();
+      this.connect();
+    } finally {
+      this.healthCheckInProgress = false;
+    }
 }
 
   isConnected() {
     return this.currentStatus === "Connected";
+  }
+
+  public subscribeRobotInfo(callback: (info: RobotInfo) => void) {
+    this.onRobotInfoUpdate = callback;
+
+    if (this.latestRobotInfo) {
+      callback(this.latestRobotInfo);
+    }
+  }
+
+  public unsubscribeRobotInfo() {
+    this.onRobotInfoUpdate = undefined;
   }
 }

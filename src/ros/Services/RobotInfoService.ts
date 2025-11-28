@@ -10,7 +10,7 @@ export type RobotInfo = {
 
 const TIMEOUT_MS = 5000;
 
-export function getRobotInformation(rate: number = 1): Promise<RobotInfo> {
+export function getRobotInformation(rate: number = 5): Promise<RobotInfo> {
   return new Promise((resolve, reject) => {
     if (!ros.ros || !ros.isConnected()) {
       return reject(new Error("ROS not connected"));

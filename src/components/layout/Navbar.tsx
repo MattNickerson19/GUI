@@ -1,9 +1,14 @@
 import { NavLink } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { ros, type RosStatus } from "../../ros/Connection/RosSingleton";
+import { type RosStatus } from "../../ros/Connection/RosSingleton";
+import Logo from "../../assets/Logos/Compusult_Logo_White.png";
+
 import "./Navbar.css";
 
-export default function Navbar() {
+interface NavbarProps {
+  status: RosStatus;
+}
+
+export default function Navbar({ status }: NavbarProps) {
   const links = [
     { to: "/planning", label: "Planning" },
     { to: "/waypoints", label: "Waypoints" },
@@ -14,21 +19,13 @@ export default function Navbar() {
     { to: "/settings", label: "Settings" }
   ];
 
-
- const [status, setStatus] = useState<RosStatus>("Not Connected");
-
-   useEffect(() => {
-
-  const updateStatus = (s: RosStatus) => setStatus(s);
-  ros.onStatus = updateStatus;
-
-  return () => {
-    ros.onStatus = undefined;
-  };
-}, []);
-
   return (
-    <nav className="navbar">
+   <nav className={`navbar ${
+      status === "Connected" ? "status-connected" :
+      status === "Connecting..." ? "status-connecting" :
+      status === "Connection Failed" ? "status-connection-failed" :
+      "status-not-connected"
+}`}>
       <div className="nav-inner">
         <div className="nav-links">
           {links.map((link) => (
@@ -42,6 +39,9 @@ export default function Navbar() {
               {link.label}
             </NavLink>
           ))}
+        </div>
+        <div className="nav-logo">
+          <img src={Logo} alt="Logo" />
         </div>
         <div className="nav-connection">
           Status: {status}

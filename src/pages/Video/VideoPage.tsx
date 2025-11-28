@@ -5,7 +5,7 @@ export default function VideoPage() {
       style={{
         width: "100%",
         height: "87vh",
-        border: "none"
+        border: "none",
       }}
     />
   );
