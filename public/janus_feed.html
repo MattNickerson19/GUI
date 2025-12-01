@@ -368,6 +368,23 @@ window.addEventListener('load', () => {
 	  p.feedId = Number(feedId);
 	}
 	
+	async function mapMidsByResolution(p){
+	  const mids = p._videoMids || [];
+	  p._midMap = {
+	    high: mids[0],
+	    mid:  mids[1] ?? mids[0],
+	    low:  mids[2] ?? mids[1] ?? mids[0]
+	  };
+	}
+
+	async function setOnlyMid(p, midOn){
+	  if(!p || !p.hid || !Array.isArray(p._videoMids) || !p._videoMids.length) return;
+	  const streams = p._videoMids.map(m => ({ mid: String(m), send: String(m) === String(midOn) }));
+	  await wsSend({ janus:"message", session_id:sid, handle_id:p.hid,
+	    body:{ request:"update", streams }
+	  });
+	}
+
 	async function handleOffer(p, jsep){
 	  const ice = JSON.parse($("iceJson").value||'{}')||{};
 	  const pc = new RTCPeerConnection(ice); p.pc = pc;
@@ -488,7 +505,7 @@ window.addEventListener('load', () => {
 	      if(msg.jsep && msg.jsep.type === "offer"){
 	        const hid = msg.sender;
 	        const pane = panes.find(x=>x.hid===hid);
-	        if(pane) handleOffer(pane, msg.jsep).catch(err=>log(`Offer err p${pane.idx+1}: ${err}`));
+	        if(pane) handleOffer(pane, msg.jsep).catch();
 	      }
 	    }else if(j === "trickle"){
 	      const hid = msg.sender;

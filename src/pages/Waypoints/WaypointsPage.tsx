@@ -1,14 +1,22 @@
-import { MapContainer, TileLayer, ScaleControl, Marker, useMapEvents } from "react-leaflet";
+import { useRef, useState, useEffect } from "react";
+//Map
+import { MapContainer, TileLayer, ScaleControl, Marker, useMapEvents, Polyline, useMap } from "react-leaflet";
 import L from "leaflet";
-import { useRef, useState } from "react";
 import "leaflet/dist/leaflet.css";
-import "./WaypointsPage.css";
+
+//Components
 import Coordinates from "../../components/Waypoints/Coordinates";
 import WaypointList from "../../components/Waypoints/WaypointsList";
 import { type RobotInfo } from "../../ros/Services/RobotInfoService";
+import { type WaypointStatusMsg } from "../../ros/Topics/WaypointStatusTopic";
+
+import robotLogo from "../../assets/Logos/Nanuk.png";
+import homeLogo from "../../assets/homeIcon.png";
+import "./WaypointsPage.css";
 
 interface WaypointsPageProps {
   robotInfo: RobotInfo | null;
+  waypointStatus: WaypointStatusMsg | null;
 }
 
 interface Waypoint {
@@ -23,18 +31,39 @@ const markerIcon = L.icon({
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
   iconSize: [25, 41],
   iconAnchor: [12, 41],
+  className: "waypoint-marker"
+});
+
+const robotIcon = L.icon({
+  iconUrl: robotLogo,
+  iconSize: [65, 70],
+  iconAnchor: [20, 40],
+  className: "robot-marker"
+});
+
+const homeIcon = L.icon({
+  iconUrl: homeLogo,
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  className: "home-marker"
 });
 
 function MapClickHandler({ onClick }: { onClick: (lat: number, lon: number) => void }) {
   useMapEvents({
-    click(e) {
-      onClick(e.latlng.lat, e.latlng.lng);
-    }
-  });
+    click(e) {onClick(e.latlng.lat, e.latlng.lng);}});
   return null;
 }
 
-export default function WaypointsPage({ robotInfo }: WaypointsPageProps) {
+function CenterMap({ lat, lon }: { lat: number; lon: number }) {
+  const map = useMap();
+  useEffect(() => {
+    map.setView([lat, lon], map.getZoom());
+  }, [lat, lon, map]);
+  return null;
+}
+
+export default function WaypointsPage({ robotInfo, waypointStatus }: WaypointsPageProps) {
   const initialLat = 47.51873;
   const initialLng = -52.80525;
   const initialZoom = 17;
@@ -55,7 +84,27 @@ export default function WaypointsPage({ robotInfo }: WaypointsPageProps) {
   const currentLat = prevLat.current;
   const currentLon = prevLon.current;
 
+  const homeLat =waypointStatus?.home_coord?.position.latitude && waypointStatus.home_coord.position.latitude !== 0? waypointStatus.home_coord.position.latitude.toFixed(6): "--";
+
+  const homeLon =waypointStatus?.home_coord?.position.longitude && waypointStatus.home_coord.position.longitude !== 0? waypointStatus.home_coord.position.longitude.toFixed(6): "--";
+
+  const goalLat =waypointStatus?.goal_coord?.position.latitude && waypointStatus.goal_coord.position.latitude !== 0? waypointStatus.goal_coord.position.latitude.toFixed(6): "--";
+
+  const goalLon =waypointStatus?.goal_coord?.position.longitude && waypointStatus.goal_coord.position.longitude !== 0? waypointStatus.goal_coord.position.longitude.toFixed(6): "--";
+
   const [waypoints, setWaypoints] = useState<Waypoint[]>([]);
+
+  const hasCurrentCoords =
+    currentLat !== "--" &&
+    currentLon !== "--" &&
+    Number(currentLat) !== 0 &&
+    Number(currentLon) !== 0;
+
+  const hasHomeCoords =
+    homeLat !== "--" &&
+    homeLon !== "--" &&
+    Number(homeLat) !== 0 &&
+    Number(homeLon) !== 0;
 
 
   const handleSendStart = () => console.log("Send & Start clicked");
@@ -68,15 +117,22 @@ export default function WaypointsPage({ robotInfo }: WaypointsPageProps) {
     <div className="main-content">
     <div className="left-panel">
       <Coordinates
-        homeLat={"--"}
-        homeLon={"--"}
+        homeLat={homeLat}
+        homeLon={homeLon}
         robotLat={currentLat}
         robotLon={currentLon}
+        goalLat={goalLat}
+        goalLon={goalLon}
+        goalNum={waypointStatus?.goal_number ?? "-"}
       />
 
       <div className="map-wrapper">
         <MapContainer
-          center={[initialLat, initialLng]}
+          center={
+          hasCurrentCoords
+          ? [Number(currentLat), Number(currentLon)]
+          : [initialLat, initialLng]
+      }
           zoom={initialZoom}
           className="waypoints-map"
         >
@@ -97,11 +153,30 @@ export default function WaypointsPage({ robotInfo }: WaypointsPageProps) {
                   id: prev.length + 1,
                   lat: Number(lat.toFixed(6)),
                   lon: Number(lon.toFixed(6)),
-                  task: "",     // or "None", your choice
+                  task: "",    
                 }
               ]);
             }}
           />
+
+          {/* Current location marker */}
+          {hasCurrentCoords && (
+            <>
+              <Marker
+                position={[Number(currentLat), Number(currentLon)]}
+                icon={robotIcon}
+              />
+              <CenterMap lat={Number(currentLat)} lon={Number(currentLon)} />
+            </>
+          )}
+
+          {/* Home marker */}
+          {hasHomeCoords && (
+              <Marker
+                position={[Number(homeLat), Number(homeLon)]}
+                icon={homeIcon}
+              />
+          )}
 
           {/* render markers */}
           {waypoints.map(wp => (
@@ -111,6 +186,13 @@ export default function WaypointsPage({ robotInfo }: WaypointsPageProps) {
               icon={markerIcon}
             />
           ))}
+          {/* draw polyline connecting waypoints */}
+          {waypoints.length > 1 && (
+            <Polyline
+              positions={waypoints.map(wp => [wp.lat, wp.lon])}
+              pathOptions={{ color: "#4a90e2", weight: 3}}
+            />
+          )}
         </MapContainer>
 
         <div className="waypoints-buttons">

@@ -2,15 +2,14 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.55rem;
-  padding-bottom: 1rem;
+  gap: 1.95rem;
 }
 
 .movement_row {
   display: flex;
   justify-content: center;
   width: 100%;
-  gap: 0.55rem;
+  gap: 1.95rem;
 }
 
 
@@ -47,5 +46,11 @@
 }
 
 .joystick-btn:active:enabled {
-  transform: scale(1.15);
+  background: linear-gradient(135deg, #151515 0%, #064ea0 50%, #1c1c1c 100%);
+  border: 5px solid #4a90e2;
+  border-radius: 10px;
+}
+
+#left, #right {
+  transform: translateY(-50%);
 }

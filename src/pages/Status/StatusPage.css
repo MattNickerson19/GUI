@@ -55,6 +55,13 @@
   margin-bottom: 0.8rem;
 }
 
+.status-card h5 {
+  margin-top: 0;
+  color: white;
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+
 .status-card div {
   margin: 0.35rem 0; 
 }

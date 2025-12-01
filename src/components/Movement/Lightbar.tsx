@@ -31,21 +31,10 @@ const Lightbar: React.FC<LightbarProps> = ({
   return (
   <div className="lightbar-container">
     <div className="top-buttons">
-      <button
-          className={`lightbar-btn ${lightBarOn ? "active" : ""}`}
-          onClick={handleLightBarClick}
-        >
-          Light Bar
-        </button>
-      <button
-        className={`lightbar-btn ${disabled ? "active" : ""}`}
-        onClick={handleDisabledClick}
-      >
-        {disabled ? "Movement Disabled" : "Movement Active"}
-      </button>
+      <button className={`lightbar-btn ${lightBarOn ? "active" : ""}`}onClick={handleLightBarClick}>Light Bar</button>
+      <button className="lightbar-btn center-btn">Center Camera</button>
+      <button className={`lightbar-btn ${disabled ? "active" : ""}`}onClick={handleDisabledClick}>{disabled ? "Movement Disabled" : "Movement Active"}</button>
     </div>
-
-    <button className="lightbar-btn center-btn">Center Camera</button>
   </div>
 );
 };
