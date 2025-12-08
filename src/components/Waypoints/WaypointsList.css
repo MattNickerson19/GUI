@@ -34,12 +34,14 @@
   font-weight: bold;
 }
 
-.index {
-  color: #4a90e2;
-}
 
 .noWaypoints {
   text-align: center;
   font-style: italic;
   color: #ccc;
 }
+
+.waypointRow.selected {
+   background: linear-gradient(135deg, #151515 0%, #4a90e2 25%, #1c1c1c 120%);
+}
+

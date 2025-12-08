@@ -77,9 +77,11 @@ export default function App() {
           <Route path="/planning" element={<PlanningPage />} />
           <Route path="/waypoints" element={<WaypointsPage 
             robotInfo={robotInfo}
-            waypointStatus={waypointStatus}/>} />
+            waypointStatus={waypointStatus}
+            status={status}/>} />
           <Route path="/movement" element={<MovementPage 
-            robotInfo={robotInfo}/>} />
+            robotInfo={robotInfo}
+            ros={ros.ros!}/>} />
           <Route path="/video" element={<VideoPage />} />
           <Route path="/status" element={<StatusPage
             status={status}

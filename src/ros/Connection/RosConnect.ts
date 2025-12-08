@@ -18,7 +18,7 @@ export class RosConnect {
   private onRobotInfoUpdate?: (info: RobotInfo) => void;
 
   constructor(
-    url = "ws://192.168.1.89:9090",
+    url = "ws://192.168.10.89:9090",
     reconnectInterval = 10000,
     onStatus?: (status: RosStatus) => void,
     healthCheckIntervalMS = 7000
@@ -27,7 +27,6 @@ export class RosConnect {
     this.reconnectInterval = reconnectInterval;
     this.onStatus = onStatus;
     this.healthCheckIntervalMS = healthCheckIntervalMS;
-
     this.startHealthCheck();
   }
 

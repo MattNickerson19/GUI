@@ -6,15 +6,15 @@
 
 .map-wrapper {
   width: 100%;        
-  margin-left: 0;    
+  margin-left: 0;  
 }
 
 .waypoints-map {
   width: 100%;       
   height: 74vh;
-  border: 3px solid #444;
-  border-radius: 10px;
-  box-shadow: 0 5px 12px rgba(0,0,0,0.5);
+  border: 2px solid  #4a90e2;       
+  border-radius: 10px;   
+  box-shadow: 0 0 12px rgba(74, 144, 226, 0.6);
   margin-bottom: 1rem;
 }
 
@@ -38,7 +38,7 @@
 }
 
 .waypoints-buttons button:active {
-  transform: scale(1.15);
+  transform: scale(1.15); 
 }
 
 .main-content {
@@ -56,12 +56,14 @@
   display: flex;
   flex-direction: column;
   width: 30%; 
+  height: calc(95vh - 105px);
 }
 
 .top-buttons {
   display: flex;
   gap: 8px;
   margin-bottom: 16px;
+  flex-shrink: 0;
 }
 
 .top-buttons button {
@@ -72,7 +74,8 @@
   max-height: 300px;
   overflow-y: auto;
   padding-right: 3px;  
-  box-shadow: 0 0 12px rgba(74, 144, 226, 0.6);
+  flex: 1;
+  margin-bottom: 0; 
 }
 
 .waypoint-list-container::-webkit-scrollbar {
@@ -82,6 +85,24 @@
 .waypoint-list-container::-webkit-scrollbar-thumb {
   background: #4a90e2;
   border-radius: 4px;
+}
+
+.waypoint-controls {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.controls-row {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;  
+  width: 100%; 
+}
+
+h5{
+  margin: 0;
+  text-align: center;
 }
 
 

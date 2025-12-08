@@ -10,15 +10,19 @@ export interface Waypoint {
 
 interface WaypointListProps {
   waypoints?: Waypoint[];
+  selectedWaypointId?: number;
+  onSelectWaypoint?: (id: number) => void;
 }
 
-const WaypointList: React.FC<WaypointListProps> = ({ waypoints = [] }) => {
+const WaypointList: React.FC<WaypointListProps> = ({
+  waypoints = [],
+  selectedWaypointId,
+  onSelectWaypoint
+}) => {
   return (
     <div className="waypointscroll">
-      {/* Warning message */}
       <span id="waypointWarningStr" className="waypointwarning highlight"></span>
 
-      {/* Waypoints table */}
       <table id="waypointlisttableWaypointTab" className="waypointlist">
         <thead>
           <tr>
@@ -31,12 +35,16 @@ const WaypointList: React.FC<WaypointListProps> = ({ waypoints = [] }) => {
         <tbody id="waypointlistWaypointTab">
           {waypoints.length > 0 ? (
             waypoints.map((wp) => (
-              <tr key={wp.id} className="waypointRow">
-                <td className="highlight index">{wp.id}</td>
-                <td className="highlight">{wp.lat}</td>
-                <td className="highlight">{wp.lon}</td>
-                <td className="highlight">{wp.task}</td>
-              </tr>
+             <tr
+                key={wp.id}
+                className={`waypointRow ${selectedWaypointId === wp.id ? "selected" : ""}`}
+                onClick={() => onSelectWaypoint?.(Number(wp.id))}
+              >
+              <td className="highlight index">{wp.id}</td>
+              <td className="highlight">{wp.lat}</td>
+              <td className="highlight">{wp.lon}</td>
+              <td className="highlight">{wp.task}</td>
+            </tr>
             ))
           ) : (
             <tr>

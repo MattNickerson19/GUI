@@ -42,9 +42,6 @@ const MiniMap: React.FC<MiniMapProps> = ({ lat, lon }) => {
     ? [lat!, lon!]
     : defaultCenter;
 
-    console.log("MiniMap lat/lon:", lat, lon);
-
-
   return (
     <div
       style={{
@@ -55,7 +52,7 @@ const MiniMap: React.FC<MiniMapProps> = ({ lat, lon }) => {
         overflow: "hidden",
       }}
     >
-      <MapContainer center={center} zoom={17} style={{ width: "100%", height: "100%" }}>
+      <MapContainer center={center} zoom={18} style={{ width: "100%", height: "100%" }}>
         {/* recenter on update */}
         {hasFix && <Recenter lat={lat!} lon={lon!} />}
 
