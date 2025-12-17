@@ -1,0 +1,94 @@
+/* Root container */
+.settings-page {
+  padding: 2rem;
+  width: 100%;
+}
+
+.settings-container {
+  display: flex;
+  gap: 15rem;
+  justify-content: center;
+  align-items: flex-start;
+  margin: 0 auto;
+}
+
+.settings-card {
+  flex: 1;
+  max-width: 420px;
+  padding: 1.5rem;
+  border-radius: 14px;
+  box-shadow: 0 0 12px rgba(74, 144, 226, 0.6);
+  border: 2px solid #4a90e2;
+  border-radius: 10px;
+}
+
+/* Card headers */
+.settings-card h2 {
+  margin-bottom: 1rem;
+  color: #ffffff;
+  font-size: 1.2rem;
+  text-align: center;
+}
+
+select{
+  padding: 0.6rem 1.2rem;
+  color: white;
+  border: 2px solid #4a90e2;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #151515 0%, #3a3a3a 50%, #1c1c1c 100%);
+  box-shadow: 0 0 12px rgba(74, 144, 226, 0.6);
+}
+
+select option {
+  background-color: #2b2b2b;
+}
+
+/* Input groups */
+.settings-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 14px;
+}
+
+.settings-group label {
+  font-size: 1rem;
+  margin-bottom: 4px;
+  color: #ffffff;
+}
+
+.settings-group input {
+  padding: 0.6rem 1.2rem;
+  color: white;
+  border: 2px solid #4a90e2;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #151515 0%, #3a3a3a 50%, #1c1c1c 100%);
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  box-shadow: 0 0 12px rgba(74, 144, 226, 0.6);
+}
+
+/* Buttons */
+.settings-save-btn,
+.settings-submit-btn {
+  padding: 0.6rem 1.2rem;
+  background: linear-gradient(135deg, #151515 0%, #3a3a3a 50%, #1c1c1c 100%);
+  color: white;
+  border: 2px solid #4a90e2;
+  border-radius: 10px;
+  width: 15rem;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  box-shadow: 0 0 12px rgba(74, 144, 226, 0.6);
+  margin: 1rem auto 0 auto;
+  display: block;
+  margin-bottom: 2rem;
+}
+
+/* Mobile fallback */
+@media (max-width: 768px) {
+  .settings-container {
+    flex-direction: column;
+  }
+}
+
+

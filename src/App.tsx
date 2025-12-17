@@ -90,8 +90,8 @@ export default function App() {
             orientation={orientation}
             dauData={dauData}/>}/>
           <Route path="/arm" element={<ArmPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
-
+          <Route path="/settings" element={<SettingsPage 
+            status={status}/>} />
           {}
           <Route path="*" element={<Navigate to="/planning" replace />} />
         </Routes>

@@ -116,10 +116,10 @@ export default function StatusPage({ robotInfo, gpsStatus, orientation, status, 
       {/* DAU */}
      <div className="status-card">
       <h3>DAU</h3>
-      <h5>({dauData?.header?.stamp? `${new Date(
+      <h5>{dauData?.header?.stamp? `${new Date(
               dauData.header.stamp.sec * 1000 + Math.floor(dauData.header.stamp.nanosec / 1e6)
             ).toLocaleDateString()} ${new Date(dauData.header.stamp.sec * 1000 + Math.floor(dauData.header.stamp.nanosec / 1e6)
-            ).toLocaleTimeString()}`: "--"})
+            ).toLocaleTimeString()}`: ""}
       </h5>
       <div className="dau-container">
         <div className="dau-column">

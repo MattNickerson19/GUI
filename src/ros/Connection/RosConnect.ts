@@ -59,7 +59,6 @@ export class RosConnect {
       try { this.ros.close(); } catch {}
       this.ros = null;
     }
-
   }
 
   private handleDisconnect() {

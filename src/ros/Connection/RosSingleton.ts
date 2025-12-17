@@ -1,10 +1,15 @@
+// RosSingleton.ts
 import { RosConnect, type RosStatus } from "./RosConnect";
+import { loadConfig } from "../../config/ConfigStore";
 
 export type { RosStatus }; 
 
 let status: RosStatus = "Not Connected";
 
-export const ros = new RosConnect("ws://192.168.10.89:9090", 5000, (newStatus) => {
+const config = loadConfig();
+const rosUrl = `ws://${config.rosNodeIp}:${config.rosNodePort}`;
+
+export const ros = new RosConnect(rosUrl, 5000, (newStatus) => {
   status = newStatus;
   console.log("ROS Status:", status);
 });

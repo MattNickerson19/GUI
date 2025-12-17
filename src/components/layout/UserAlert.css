@@ -12,12 +12,11 @@
   background: #ffffff;
   padding: 32px 48px;
   border-radius: 16px;
-  border: 2px solid #830505;
+  border: 2px solid transparent;
   background: linear-gradient(135deg, #151515 0%, #3a3a3a 50%, #1c1c1c 100%);
-  max-width: 500px;            
-  width: calc(100% - 60px); 
+  max-width: 500px;
+  width: calc(100% - 60px);
   text-align: center;
-  animation: pulse-red 1.2s infinite ease-in-out;
 }
 
 .ua-message {
@@ -37,6 +36,16 @@
   cursor: pointer;
   transition: all 0.15s ease-in-out;
   box-shadow: 0 0 12px rgba(74, 144, 226, 0.6);
+}
+
+.ua-blue {
+  border-color: #4a90e2;
+  box-shadow: 0 0 14px rgba(74, 144, 226, 0.6);
+}
+
+.ua-red {
+  border-color: #830505;
+  animation: pulse-red 1.2s infinite ease-in-out;
 }
 
 
