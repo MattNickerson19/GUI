@@ -62,6 +62,7 @@ export default function SettingsPage({ status }: SettingsPageProps) {
     });
     setAlertMsg("GUI Settings saved successfully!");
     console.log("GUI settings saved.");
+    window.location.reload();
   };
 
   const submitROSParameters = async () => {

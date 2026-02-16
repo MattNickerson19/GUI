@@ -38,44 +38,71 @@ export class ParametersService {
     });
   }
 
-  static setConeHeight(value: number): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (!ros.ros || !ros.isConnected()) {
-        return reject(new Error("ROS not connected"));
-      }
+  static async setConeHeight(value: number): Promise<void> {
+    if (!ros.ros || !ros.isConnected()) {
+        throw new Error("ROS not connected");
+    }
 
-      const service = new ROSLIB.Service({
+    const setParamService = new ROSLIB.Service({
         ros: ros.ros,
         name: "/conical_filter_node/set_parameters",
         serviceType: "rcl_interfaces/srv/SetParameters",
-      });
+    });
 
-      const request = {
+    const clearCostmapService = new ROSLIB.Service({
+        ros: ros.ros,
+        name: "/global_costmap/clear_entirely_global_costmap",
+        serviceType: "nav2_msgs/srv/ClearEntireCostmap",
+    });
+
+    const setRequest = {
         parameters: [
-          {
+        {
             name: "cone_height",
             value: { type: 3, double_value: value }, // PARAMETER_DOUBLE
-          },
+        },
         ],
-      };
+    };
 
-      let timeout = setTimeout(() => {
+    //Set parameter
+    await new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => {
         reject(new Error("Set cone height service timeout"));
-      }, TIMEOUT_MS);
+        }, TIMEOUT_MS);
 
-      service.callService(
-        request,
+        setParamService.callService(
+        setRequest,
         () => {
-          if (timeout) clearTimeout(timeout);
-          resolve();
+            clearTimeout(timeout);
+            resolve();
         },
         (error: any) => {
-          if (timeout) clearTimeout(timeout);
-          reject(new Error(`Service call failed: ${error}`));
+            clearTimeout(timeout);
+            reject(new Error(`Set cone height failed: ${error}`));
         }
-      );
+        );
     });
-  }
+
+    //Clear costmap
+    await new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+        reject(new Error("Clear costmap service timeout"));
+        }, TIMEOUT_MS);
+
+        clearCostmapService.callService(
+        {},
+        () => {
+            clearTimeout(timeout);
+            resolve();
+        },
+        (error: any) => {
+            clearTimeout(timeout);
+            reject(new Error(`Clear costmap failed: ${error}`));
+        }
+        );
+    });
+    }
+
 
   static getRCOverride(): Promise<boolean> {
     return new Promise((resolve, reject) => {

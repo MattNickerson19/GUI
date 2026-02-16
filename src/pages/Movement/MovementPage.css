@@ -27,8 +27,15 @@
   height: 100%;
 }
 
-.pane-minimap {
+.pane-top-row {
   flex: 1;
+  display: flex;
+  gap: 0.3rem;
+}
+
+.pane-minimap,
+.pane-orientation {
+  flex: 1; /* 50% each */
   display: flex;
   align-items: center;
   justify-content: center;

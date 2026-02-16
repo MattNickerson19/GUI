@@ -81,6 +81,7 @@ export default function App() {
             status={status}/>} />
           <Route path="/movement" element={<MovementPage 
             robotInfo={robotInfo}
+            orientation={orientation}
             ros={ros.ros!}/>} />
           <Route path="/video" element={<VideoPage />} />
           <Route path="/status" element={<StatusPage

@@ -4,6 +4,8 @@ import { type RobotInfo } from "../../ros/Services/RobotInfoService";
 import { type OrientationMsg} from "../../ros/Topics/OrientationTopic";
 import { type DauStampedMsg} from "../../ros/Topics/DauTopic";
 
+
+
 import "./StatusPage.css";
 
 interface StatusPageProps {
@@ -102,6 +104,8 @@ export default function StatusPage({ robotInfo, gpsStatus, orientation, status, 
         <div><span className="label">Longitude:</span> {prevLng.current}°</div>
         <div><span className="label">Altitude:</span> {prevAlt.current} m</div>
         <div><span className="label">Heading:</span> {headingDisplay}</div>
+
+        
       </div>
 
       {/* Battery */}
@@ -153,6 +157,7 @@ export default function StatusPage({ robotInfo, gpsStatus, orientation, status, 
         </div>
       </div>
     </div>
+   
     </div>
   );
 }
