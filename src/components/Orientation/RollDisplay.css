@@ -1,0 +1,78 @@
+.roll-horizon-container {
+  position: relative;
+  width: 90%;          /* match .horizon-container */
+  height: 90%;         /* match .horizon-container */
+  aspect-ratio: 1;     /* perfect circle */
+  border-radius: 50%;
+  overflow: hidden;
+  background: #111;
+  border: 6px solid #4a90e2;
+  box-shadow: 0 0 12px rgba(74, 144, 226, 0.6);
+}
+
+.roll-horizon-circle {
+  position: absolute;
+  width: 100%;
+  height: 200%;       /* same as horizon-world for pitch */
+  top: -50%;
+  left: 0;
+  transition: transform 0.1s linear;
+  transform-origin: center center;
+}
+
+.roll-horizon-sky {
+  height: 50%;
+  background: linear-gradient(#2aa7d6, #3cc3ff);
+}
+
+.roll-horizon-ground {
+  height: 50%;
+  background: #5b4b45;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+}
+
+.roll-center-line {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 75%;         
+  height: 3px;
+  background: #ff6a00;
+  transform: translate(-50%, -50%);
+}
+
+.roll-value-label {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%); 
+  color: #ff6a00;
+  font-weight: bold;
+  font-size: 18px;
+  pointer-events: none; 
+  z-index: 3;
+  text-align: center;
+}
+
+
+.roll-circle-marker {
+  position: absolute;
+  width: 2px;
+  height: 10px;
+  background: white;
+  transform-origin: center center;
+}
+
+.roll-number {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-origin: center center;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
+  width: 60px;
+}

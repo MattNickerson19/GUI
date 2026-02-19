@@ -18,9 +18,12 @@ import { GpsStatusTopic} from "./ros/Topics/GpsStatusTopic";
 import { OrientationTopic , type OrientationMsg} from "./ros/Topics/OrientationTopic";
 import { DauTopic , type DauStampedMsg} from "./ros/Topics/DauTopic";
 import { WaypointStatusTopic, type WaypointStatusMsg } from "./ros/Topics/WaypointStatusTopic";
+import { OdomMetricsTopic, type ForwardDistanceMsg } from "./ros/Topics/OdomMetricsTopic";
+//import {OdomMetricsService} from "./ros/Services/OdomMetricsService";
 
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import "./App.css";
+import GamepadController from "./components/Movement/GamepadController";
 
 
 export default function App() {
@@ -33,10 +36,15 @@ export default function App() {
   const [gpsStatus, setGpsStatus] = useState<string>("--");
   // Orientation
   const [orientation, setOrientation] = useState<OrientationMsg | null>(null);
+  //Odom Metrics
+  const [forwardDistance, setForwardDistance] = useState<ForwardDistanceMsg | null>(null);
   // DAU Data
   const [dauData, setDauData] = useState<DauStampedMsg | null>(null);
   //Waypoint Status
   const [waypointStatus, setWaypointStatus] = useState<WaypointStatusMsg | null>(null);
+  //Gamepad State
+  const [gamepadConnected, setGamepadConnected] = useState(false);
+
 
   useEffect(() => {
     const updateStatus = (s: RosStatus) => setStatus(s);
@@ -50,6 +58,9 @@ export default function App() {
     const orientationTopic = new OrientationTopic(ros.ros!);
     orientationTopic.subscribe(setOrientation);
 
+    const odomMetricsTopic = new OdomMetricsTopic(ros.ros!);
+    odomMetricsTopic.subscribe(setForwardDistance);
+
     const dauTopic = new DauTopic(ros.ros!);
     dauTopic.subscribe(setDauData);
 
@@ -61,6 +72,7 @@ export default function App() {
       ros.unsubscribeRobotInfo();
       gpsTopic.unsubscribe();
       orientationTopic.unsubscribe();
+      odomMetricsTopic.unsubscribe();
       dauTopic.unsubscribe();
       waypointStatusTopic.unsubscribe();
     };
@@ -68,7 +80,13 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <Navbar status={status}/>
+      <GamepadController
+        ros={ros.ros!}
+        onConnectionChange={setGamepadConnected}
+      />
+
+      <Navbar 
+        status={status}/>
 
       <div className="app-background">
         <Routes>
@@ -82,6 +100,7 @@ export default function App() {
           <Route path="/movement" element={<MovementPage 
             robotInfo={robotInfo}
             orientation={orientation}
+            forwardDistance={forwardDistance}
             ros={ros.ros!}/>} />
           <Route path="/video" element={<VideoPage />} />
           <Route path="/status" element={<StatusPage
@@ -104,6 +123,7 @@ export default function App() {
         gpsStatus={gpsStatus}
         onRecordVideo={() => console.log("Record Video clicked")}
         onRecordLidar={() => console.log("Record LiDAR clicked")}
+        gamepadConnected={gamepadConnected}
       />
        
     </BrowserRouter>

@@ -29,7 +29,6 @@
   color: white;
   font-size: 2rem; 
   padding: 0.3rem 0.5rem;
-  cursor: pointer;
 }
 
 
@@ -65,10 +64,37 @@
   100% { box-shadow: 0 0 4px rgba(74,144,226,0.2); }
 }
 
+@keyframes pulse-blue-icon {
+  0% {
+    text-shadow: 0 0 2px rgba(74,144,226,0.3);
+    transform: scale(1);
+  }
+  50% {
+    text-shadow: 0 0 12px rgba(39, 84, 136, 0.9);
+    transform: scale(1.08);
+  }
+  100% {
+    text-shadow: 0 0 2px rgba(74,144,226,0.3);
+    transform: scale(1);
+  }
+}
+
 .placeholder {
   color: #888; /* lighter gray */
   font-style: italic;
 }
 
+.controller {
+  margin-left: 40%;   
+}
+
+.controller.disconnected {
+  color: white;
+}
+
+.controller.connected {
+  animation: pulse-blue-icon 1.4s infinite ease-in-out;
+  color: #4a90e2;  
+}
 
 

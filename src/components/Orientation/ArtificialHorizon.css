@@ -1,0 +1,115 @@
+.horizon-container {
+  position: relative;
+  width: 75%;
+  height: 90%;
+  aspect-ratio: 2;
+  border-radius: 25%;
+  overflow: hidden;
+  background: #111;
+  border: 4px solid #4a90e2;
+  box-shadow: 0 0 12px rgba(74, 144, 226, 0.6);
+}
+
+.horizon-world {
+  position: absolute;
+  width: 100%;
+  height: 200%;
+  top: -50%;
+  left: 0;
+  transition: transform 0.1s linear;
+}
+
+.sky {
+  height: 50%;
+  background: linear-gradient(#1b86ad, #37b5eb);
+}
+
+.ground {
+  height: 50%;
+  background: #50403b;
+}
+
+/* Pitch ladder */
+.pitch-mark {
+  position: absolute;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pitch-line {
+  width: 40%;
+  height: 2px;
+  background: white;
+}
+
+.pitch-label {
+  position: absolute;
+  font-size: 15px;
+  font-weight: bold;
+  color: white;
+}
+
+.pitch-label.left {
+  left: 18%;
+}
+
+.pitch-label.right {
+  right: 18%;
+}
+
+/* Fixed overlay */
+.horizon-overlay {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.center-line {
+  position: absolute;
+  top: 50%;
+  left: 50%;             
+  width: 80%;          
+  height: 3px;
+  background: #ff6a00;
+  transform: translate(-50%, -50%); 
+}
+
+.center-pitch {
+  position: absolute;
+  top: 50%;
+  left: 93%; 
+  transform: translateY(-50%);
+  color: #ff6a00;
+  font-weight: bold;
+  font-size: 15px;
+}
+.center-pitch2 {
+  position: absolute;
+  top: 50%;
+  left: 4%; 
+  transform: translateY(-50%);
+  color: #ff6a00;
+  font-weight: bold;
+  font-size: 15px;
+}
+
+.pitch-corner {
+  position: absolute;
+  top: 6%;
+  left: 6%;
+  color: #ffffff;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.roll-corner {
+  position: absolute;
+  top: 6%;
+  right: 6%;
+  color: #ffffff;
+  font-weight: bold;
+  font-size: 14px;
+}

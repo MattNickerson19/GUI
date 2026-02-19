@@ -10,6 +10,7 @@ interface BottomBarProps {
   onRecordVideo?: () => void;
   onRecordLidar?: () => void;
   gpsStatus?: string;
+  gamepadConnected: boolean;
 }
 
 export default function BottomBar({
@@ -18,6 +19,7 @@ export default function BottomBar({
   gpsStatus,
   onRecordVideo,
   onRecordLidar,
+  gamepadConnected
 }: BottomBarProps) {
   const prevLat = useRef<string>("--");
   const prevLng = useRef<string>("--");
@@ -72,7 +74,12 @@ export default function BottomBar({
           >
             <i className="fas fa-vr-cardboard"></i>
           </button>
+          
+          <i
+            className={`fas fa-gamepad icon-button controller ${gamepadConnected ? "connected" : "disconnected"}`}
+          />
         </div>
+        
         <div className="nav-logo">
           <img src={Logo} alt="Logo" />
         </div>
