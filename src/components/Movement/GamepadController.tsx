@@ -13,6 +13,15 @@ const GamepadController = ({ ros, onConnectionChange }: GamepadControllerProps) 
   const cmdLin = useRef(0);
   const cmdAng = useRef(0);
   const lastT = useRef(performance.now());
+  const MAX_PAN = 100;  
+  const MAX_TILT = 100;
+  const lastZoom = useRef<number | null>(null);
+  const zoomLevel = useRef(0); 
+  const ZOOM_STEP = 50; 
+  const MAX_ZOOM = 10000; 
+  const MIN_ZOOM = 0;
+  const lastLeftStickPressed = useRef(false);
+
 
   useEffect(() => {
     if (!ros) return;
@@ -22,6 +31,19 @@ const GamepadController = ({ ros, onConnectionChange }: GamepadControllerProps) 
       name: "/tablet_vel",
       messageType: "geometry_msgs/msg/Twist",
     });
+
+    const panTiltTopic = new ROSLIB.Topic({
+      ros,
+      name: "/pan_tilt",
+      messageType: "axis_camera_msgs/msg/PanTilt",
+    });
+
+    const zoomTopic = new ROSLIB.Topic({
+      ros,
+      name: "/zoom",
+      messageType: "std_msgs/msg/String",
+    });
+
 
     const RATE_HZ = 30;
     const DEADBAND = 0.08;
@@ -103,7 +125,7 @@ const GamepadController = ({ ros, onConnectionChange }: GamepadControllerProps) 
       if (B) eStop.current = true;
       if (A) eStop.current = false;
 
-      let rawLin = -gp.axes[1]; // invert forward
+      let rawLin = -gp.axes[3];
       let rawAng = gp.axes[2];
 
       rawLin = expo(deadband(rawLin, DEADBAND), EXPO);
@@ -121,6 +143,53 @@ const GamepadController = ({ ros, onConnectionChange }: GamepadControllerProps) 
       cmdAng.current = slew(cmdAng.current, targetAng, SLEW_ANG * dt);
 
       publishTwist(cmdLin.current, cmdAng.current);
+
+      // ==========================
+      // PTZ CONTROL (Left Stick + D-Pad)
+      // ==========================
+
+      
+      let rawPan = gp.axes[0];
+      let rawTilt = -gp.axes[1];
+
+      rawPan = expo(deadband(rawPan, DEADBAND), EXPO);
+      rawTilt = expo(deadband(rawTilt, DEADBAND), EXPO);
+
+      const panStr = String(Math.round(rawPan * MAX_PAN));
+      const tiltStr = String(Math.round(rawTilt * MAX_TILT));
+
+      const dpadUp = gp.buttons[12]?.pressed;
+      const dpadDown = gp.buttons[13]?.pressed;
+      const leftStickPressed = gp.buttons[10]?.pressed;
+
+    if (dpadUp) zoomLevel.current += ZOOM_STEP;    // zoom in
+    if (dpadDown) zoomLevel.current -= ZOOM_STEP;  // zoom out
+
+    // Clamp zoomLevel
+    zoomLevel.current = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoomLevel.current));
+
+    // Only publish if changed
+    if (zoomLevel.current !== lastZoom.current) {
+        zoomTopic.publish({ data: String(zoomLevel.current) });
+        lastZoom.current = zoomLevel.current;
+    }
+
+    if (leftStickPressed && !lastLeftStickPressed.current) {
+      panTiltTopic.publish({
+        pan: "home",
+        tilt: "home",
+      });
+    }
+
+    lastLeftStickPressed.current = leftStickPressed;
+
+      // Publish PanTilt
+      panTiltTopic.publish({
+        pan: panStr,
+        tilt: tiltStr,
+      });
+
+      
     }, 1000 / RATE_HZ);
 
     return () => {
