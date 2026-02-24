@@ -86,7 +86,11 @@
 
   <div class="log" id="log" style="display:none;"></div>
 </div>
-<script>
+<script src="https://cdn.jsdelivr.net/npm/roslib/build/roslib.min.js"></script>
+<script type="module">
+	import { AxisTopics } from '../../src/ros/Topics/AxisTopics.js';
+  
+
 window.addEventListener('load', () => {
 	const grid = document.getElementById('grid');
 	let paneCount = 0;
@@ -655,7 +659,71 @@ window.addEventListener('load', () => {
 	});
 
 	$("btnConnect").click();
-});
+
+
+	const ros = new ROSLIB.Ros({ url: 'ws://192.168.10.89:9090' });
+	const cameraHost = 'http://192.168.10.90';
+	window.axisTopics = new AxisTopics(ros, cameraHost, "root", "GLIMRbot_7914");
+
+	const topics = window.axisTopics;
+
+	let currentZoom = 0;       // starting zoom
+	const ZOOM_STEP = 200;     // amount per click
+	const HOLD_INTERVAL = 100;
+
+	// PTZ buttons
+	const btnZoomIn = document.getElementById('btnZoomIn');
+	const btnZoomOut = document.getElementById('btnZoomOut');
+	const btnHome = document.getElementById('btnHome');
+	const btnLeft = document.getElementById('btnLeft');
+	const btnRight = document.getElementById('btnRight');
+	const btnUp = document.getElementById('btnUp');
+	const btnDown = document.getElementById('btnDown');
+
+	function sendOnePanTilt(x, y) {
+		topics.publishPanTilt(x, y);       // send once
+		setTimeout(() => topics.publishPanTilt('0', '0'), 50); // reset to zero after 50ms
+		}
+
+	function addHoldableButton(button, onHold, onClick) {
+	let intervalId = null;
+
+	button.addEventListener('mousedown', () => {
+		onClick(); // send one immediately
+		intervalId = setInterval(onHold, HOLD_INTERVAL);
+	});
+	button.addEventListener('mouseup', () => clearInterval(intervalId));
+	button.addEventListener('mouseleave', () => clearInterval(intervalId));
+	}
+
+	// Zoom
+	if (btnZoomIn) addHoldableButton(
+		btnZoomIn,
+		() => { currentZoom += ZOOM_STEP; topics.publishZoom(currentZoom); },
+		() => { currentZoom += ZOOM_STEP; topics.publishZoom(currentZoom); }
+	);
+
+	if (btnZoomOut) addHoldableButton(
+		btnZoomOut,
+		() => { currentZoom -= ZOOM_STEP; topics.publishZoom(currentZoom); },
+		() => { currentZoom -= ZOOM_STEP; topics.publishZoom(currentZoom); }
+	);
+
+	// Home preset
+	if (btnHome) btnHome.addEventListener('click', () => topics.goHomePreset());
+
+	// Pan/Tilt
+	if (btnLeft) addHoldableButton(btnLeft, () => sendOnePanTilt('-200', '0'), () => sendOnePanTilt('-200', '0'));
+	if (btnRight) addHoldableButton(btnRight, () => sendOnePanTilt('200', '0'), () => sendOnePanTilt('200', '0'));
+	if (btnUp) addHoldableButton(btnUp, () => sendOnePanTilt('0', '200'), () => sendOnePanTilt('0', '200'));
+	if (btnDown) addHoldableButton(btnDown, () => sendOnePanTilt('0', '-200'), () => sendOnePanTilt('0', '-200'));
+	});
+
+	window.addEventListener('beforeunload', () => {
+    if (ros) {
+      ros.close();  // closes the WebSocket
+    }
+  });
 </script>
 
 

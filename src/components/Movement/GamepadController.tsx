@@ -1,5 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import * as ROSLIB from "roslib";
+import { AxisTopics } from "../../ros/Topics/AxisTopics";
 
 interface GamepadControllerProps {
   ros: ROSLIB.Ros;
@@ -21,6 +22,13 @@ const GamepadController = ({ ros, onConnectionChange }: GamepadControllerProps) 
   const MAX_ZOOM = 10000; 
   const MIN_ZOOM = 0;
   const lastLeftStickPressed = useRef(false);
+  const presetActive = useRef(false);
+
+
+  const axisTopics = useMemo(() => 
+    new AxisTopics(ros, "http://192.168.10.90", "root", "GLIMRbot_7914"), 
+  [ros]
+);
 
 
   useEffect(() => {
@@ -30,18 +38,6 @@ const GamepadController = ({ ros, onConnectionChange }: GamepadControllerProps) 
       ros,
       name: "/tablet_vel",
       messageType: "geometry_msgs/msg/Twist",
-    });
-
-    const panTiltTopic = new ROSLIB.Topic({
-      ros,
-      name: "/pan_tilt",
-      messageType: "axis_camera_msgs/msg/PanTilt",
-    });
-
-    const zoomTopic = new ROSLIB.Topic({
-      ros,
-      name: "/zoom",
-      messageType: "std_msgs/msg/String",
     });
 
 
@@ -144,10 +140,7 @@ const GamepadController = ({ ros, onConnectionChange }: GamepadControllerProps) 
 
       publishTwist(cmdLin.current, cmdAng.current);
 
-      // ==========================
       // PTZ CONTROL (Left Stick + D-Pad)
-      // ==========================
-
       
       let rawPan = gp.axes[0];
       let rawTilt = -gp.axes[1];
@@ -162,36 +155,31 @@ const GamepadController = ({ ros, onConnectionChange }: GamepadControllerProps) 
       const dpadDown = gp.buttons[13]?.pressed;
       const leftStickPressed = gp.buttons[10]?.pressed;
 
-    if (dpadUp) zoomLevel.current += ZOOM_STEP;    // zoom in
-    if (dpadDown) zoomLevel.current -= ZOOM_STEP;  // zoom out
-
-    // Clamp zoomLevel
-    zoomLevel.current = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoomLevel.current));
-
-    // Only publish if changed
-    if (zoomLevel.current !== lastZoom.current) {
-        zoomTopic.publish({ data: String(zoomLevel.current) });
+      // Zoom
+      if (dpadUp) zoomLevel.current += ZOOM_STEP;
+      if (dpadDown) zoomLevel.current -= ZOOM_STEP;
+        zoomLevel.current = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoomLevel.current));
+      if (zoomLevel.current !== lastZoom.current) {
+        axisTopics.publishZoom(zoomLevel.current);
         lastZoom.current = zoomLevel.current;
-    }
+      }
 
-    if (leftStickPressed && !lastLeftStickPressed.current) {
-      panTiltTopic.publish({
-        pan: "home",
-        tilt: "home",
-      });
+      if (leftStickPressed && !lastLeftStickPressed.current) {
+        presetActive.current = true;     
+        axisTopics.goHomePreset();        
+
+        setTimeout(() => {
+            presetActive.current = false;
+        }, 10000);
+    }
+   
+    if (!presetActive.current) {
+        axisTopics.publishPanTilt(panStr, tiltStr);
     }
 
     lastLeftStickPressed.current = leftStickPressed;
 
-      // Publish PanTilt
-      panTiltTopic.publish({
-        pan: panStr,
-        tilt: tiltStr,
-      });
-
-      
     }, 1000 / RATE_HZ);
-
     return () => {
       window.removeEventListener("gamepadconnected", onGamepadConnected);
       window.removeEventListener("gamepaddisconnected", onGamepadDisconnected);
