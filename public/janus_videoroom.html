@@ -88,9 +88,9 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/roslib/build/roslib.min.js"></script>
 <script type="module">
-	import { AxisTopics } from '../../src/ros/Topics/AxisTopics.js';
-  
 
+import { AxisTopics } from '../../src/ros/Topics/AxisTopics.js';
+  
 window.addEventListener('load', () => {
 	const grid = document.getElementById('grid');
 	let paneCount = 0;
@@ -660,7 +660,6 @@ window.addEventListener('load', () => {
 
 	$("btnConnect").click();
 
-
 	const ros = new ROSLIB.Ros({ url: 'ws://192.168.10.89:9090' });
 	const cameraHost = 'http://192.168.10.90';
 	window.axisTopics = new AxisTopics(ros, cameraHost, "root", "GLIMRbot_7914");
@@ -686,14 +685,14 @@ window.addEventListener('load', () => {
 		}
 
 	function addHoldableButton(button, onHold, onClick) {
-	let intervalId = null;
+		let intervalId = null;
 
-	button.addEventListener('mousedown', () => {
-		onClick(); // send one immediately
-		intervalId = setInterval(onHold, HOLD_INTERVAL);
-	});
-	button.addEventListener('mouseup', () => clearInterval(intervalId));
-	button.addEventListener('mouseleave', () => clearInterval(intervalId));
+		button.addEventListener('mousedown', () => {
+			onClick(); // send one immediately
+			intervalId = setInterval(onHold, HOLD_INTERVAL);
+		});
+		button.addEventListener('mouseup', () => clearInterval(intervalId));
+		button.addEventListener('mouseleave', () => clearInterval(intervalId));
 	}
 
 	// Zoom

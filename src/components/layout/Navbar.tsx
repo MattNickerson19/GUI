@@ -15,7 +15,7 @@ export default function Navbar({ status }: NavbarProps) {
     { to: "/movement", label: "Movement" },
     { to: "/video", label: "Video" },
     { to: "/status", label: "Status" },
-    { to: "/arm", label: "Arm" },
+    //{ to: "/arm", label: "Arm" },
     { to: "/settings", label: "Settings" }
   ];
 

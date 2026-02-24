@@ -39,13 +39,6 @@ export class AxisTopics {
     this.panTiltTopic.publish({ pan, tilt });
   }
 
-
-  publishPresetForward() {
-    const FORWARD_PAN = "0";   
-    const FORWARD_TILT = "0";  
-    this.publishPanTilt(FORWARD_PAN, FORWARD_TILT);
-  }
-
   publishZoom(level: number) {
     this.zoomTopic.publish({ data: String(level) });
   }
@@ -58,7 +51,6 @@ export class AxisTopics {
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     xhr.onload = () => console.log('Home preset response:', xhr.responseText);
-    xhr.onerror = (e) => console.error('Error going to home preset:', e);
 
     xhr.send();
   }

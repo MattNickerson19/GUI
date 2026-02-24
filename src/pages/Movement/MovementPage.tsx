@@ -12,6 +12,7 @@ import { OdomMetricsReset } from "../../ros/Services/OdomMetricsReset";
 
 import "./MovementPage.css";
 import type { ForwardDistanceMsg } from "../../ros/Topics/OdomMetricsTopic";
+import { AxisTopics } from '../../ros/Topics/AxisTopics.js';
 
 interface MovementPageProps {
   robotInfo: RobotInfo | null;
@@ -83,6 +84,9 @@ const MovementPage = ({ robotInfo, orientation, ros, forwardDistance }: Movement
     return `${Math.round(meters)} m`;
   };
 
+  const cameraHost = 'http://192.168.10.90';
+  const axisTopics = new AxisTopics(ros, cameraHost, "root", "GLIMRbot_7914");
+
     return (
     <div className="movement-page">
     
@@ -120,6 +124,10 @@ const MovementPage = ({ robotInfo, orientation, ros, forwardDistance }: Movement
           <div className="control-buttons">
             <button className={`mvmt-btn ${lightBarOn ? "active" : ""}`} onClick={handleLightBarClick}>
               Light Bar
+            </button>
+
+            <button className="mvmt-btn" onClick={() => axisTopics.goHomePreset()}>
+              Center Camera
             </button>
 
             <button
